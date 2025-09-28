@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Stok Opname - Supabase</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #34495e;
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .editable {
+            background: #fff3cd;
+            border: 1px dashed #ffc107;
+            border-radius: 3px;
+            padding: 5px;
+            min-width: 60px;
+        }
+
+        .editable:focus {
+            background: #ffffff;
+            outline: 2px solid #3498db;
+            border: 1px solid #3498db;
+        }
+
+        .status-match {
+            color: #27ae60;
+            font-weight: bold;
+            background: #d4edda;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .status-plus {
+            color: #e67e22;
+            font-weight: bold;
+            background: #ffeaa7;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .status-minus {
+            color: #e74c3c;
+            font-weight: bold;
+            background: #ffcccc;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background: #f8f9fa;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .file-upload-area:hover {
+            background: #e8f4fc;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .login-section {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .user-info {
+            background: #e8f4fc;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .tab-container {
+            margin: 20px 0;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #3498db;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+
+        .tab.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+
+        .filter-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            margin-bottom: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .filter-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .search-box {
+            max-width: 300px;
+        }
+
+        .active-filters {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tag {
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-tag .remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Section -->
+    <div id="loginSection" class="login-section">
+        <h2 style="text-align: center; margin-bottom: 20px;">🔐 Login Sistem Stok Opname</h2>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" placeholder="email@example.com">
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="Password">
+        </div>
+        <button onclick="login()" class="btn-success" style="width: 100%;">Login</button>
+        <div id="loginMessage" style="margin-top: 15px; text-align: center;"></div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="appSection" class="container hidden">
+        <!-- User Info -->
+        <div class="user-info">
+            <span>👋 Selamat datang, <span id="userEmail"></span></span>
+            <button onclick="logout()" class="btn-danger">Logout</button>
+        </div>
+
+        <h1>📊 SISTEM STOK OPNAME - SUPABASE</h1>
+
+        <!-- Tab Navigation -->
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab(1)">📤 Upload Data</div>
+                <div class="tab" onclick="switchTab(2)">📋 Hasil Perbandingan</div>
+                <div class="tab" onclick="switchTab(3)">🖨️ Laporan</div>
+                <div class="tab" onclick="switchTab(4)">💾 Data Master</div>
+            </div>
+
+            <!-- Tab 1: Upload Data -->
+            <div id="tab1" class="tab-content active">
+                <div class="section">
+                    <h2>📤 Upload Data untuk Perbandingan</h2>
+                    
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <h4>Data Stok Opname</h4>
+                            <div class="file-upload-area" onclick="document.getElementById('opnameFile').click()">
+                                📁
+                                <p>Klik untuk upload Data Stok Opname (CSV)</p>
+                                <p><small>Format: barcode, nama_barang, qty, gudang</small></p>
+                                <input type="file" id="opnameFile" accept=".csv" style="display: none" onchange="handleOpnameUpload(this.files[0])">
+                            </div>
+                            <div id="opnameSummary"></div>
+                        </div>
+
+                        <div class="summary-card">
+                            <h4>Data Stok Update</h4>
+                            <div class="file-upload-area" onclick="document.getElementById('stokUpdateFile').click()">
+                                📄
+                                <p>Klik untuk upload Data Stok Update (CSV)</p>
+                                <p><small>Format: barcode, nama_barang, qty_update, gudang</small></p>
+                                <input type="file" id="stokUpdateFile" accept=".csv" style="display: none" onchange="handleStokUpdateUpload(this.files[0])">
+                            </div>
+                            <div id="stokUpdateSummary"></div>
+                        </div>
+                    </div>
+
+                    <button onclick="compareData()" class="btn-success" id="compareBtn" disabled>
+                        🔍 Mulai Perbandingan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 2: Hasil Perbandingan -->
+            <div id="tab2" class="tab-content">
+                <div class="section">
+                    <h2>📋 Hasil Perbandingan & Edit Qty</h2>
+                    
+                    <!-- Filter Section -->
+                    <div class="filter-section">
+                        <div class="filter-title">🔍 Filter Tampilan Data</div>
+                        
+                        <div class="filter-options">
+                            <div class="filter-group">
+                                <input type="checkbox" id="filterAll" class="filter-checkbox" checked onchange="toggleFilter('all')">
+                                <label for="filterAll">Tampilkan Semua</label>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <input type="checkbox" id="filterMatch" class="filter-checkbox" checked onchange="toggleFilter('match')">
+                                <label for="filterMatch">✅ Barang Sesuai</label>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <input type="checkbox" id="filterPlus" class="filter-checkbox" checked onchange="toggleFilter('plus')">
+                                <label for="filterPlus">⬆️ Barang Lebih</label>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <input type="checkbox" id="filterMinus" class="filter-checkbox" checked onchange="toggleFilter('minus')">
+                                <label for="filterMinus">⬇️ Barang Kurang</label>
+                            </div>
+                            
+                            <div class="search-box">
+                                <input type="text" id="searchInput" placeholder="🔍 Cari barcode atau nama barang..." 
+                                       onkeyup="applySearchFilter()" style="width: 100%;">
+                            </div>
+                        </div>
+                        
+                        <div class="active-filters" id="activeFilters">
+                            <!-- Filter tags akan ditampilkan di sini -->
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button onclick="saveToSupabase()" class="btn-success" id="saveBtn" disabled>
+                            💾 Simpan ke Database
+                        </button>
+                        <button onclick="loadFromSupabase()" class="btn-secondary">
+                            📥 Load dari Database
+                        </button>
+                        <button onclick="addManualItem()" class="btn-warning">
+                            ➕ Tambah Barang Manual
+                        </button>
+                        <button onclick="clearAllFilters()" class="btn-info">
+                            🗑️ Hapus Semua Filter
+                        </button>
+                    </div>
+
+                    <div style="margin: 10px 0; font-size: 14px; color: #666;">
+                        Menampilkan <span id="displayCount">0</span> dari <span id="totalCount">0</span> barang
+                    </div>
+
+                    <table id="comparisonTable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Barcode</th>
+                                <th>Nama Barang</th>
+                                <th>Gudang</th>
+                                <th>Qty Opname</th>
+                                <th>Qty Update</th>
+                                <th>Selisih</th>
+                                <th>Status</th>
+                                <th>Edit Qty Baru</th>
+                                <th>Reason</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonBody">
+                            <tr>
+                                <td colspan="11" style="text-align: center; padding: 20px;">
+                                    Belum ada data. Upload data dan lakukan perbandingan terlebih dahulu.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 3: Laporan -->
+            <div id="tab3" class="tab-content">
+                <div class="section">
+                    <h2>🖨️ Laporan & Analytics</h2>
+                    
+                    <div class="summary-grid" id="reportSummary">
+                        <div class="summary-card">
+                            <h4>Total Barang</h4>
+                            <p style="font-size: 24px; font-weight: bold; color: #3498db;">0</p>
+                            <p>Item dibandingkan</p>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button onclick="generateReport()" class="btn-success">
+                            🖨️ Print Laporan
+                        </button>
+                        <button onclick="exportToExcel()" class="btn-warning">
+                            📁 Export ke Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Data Master -->
+            <div id="tab4" class="tab-content">
+                <div class="section">
+                    <h2>💾 Data Master</h2>
+                    
+                    <div class="action-buttons">
+                        <button onclick="loadMasterData()" class="btn-success">
+                            📥 Load Data Master
+                        </button>
+                        <button onclick="syncToMaster()" class="btn-warning">
+                            🔄 Sync ke Data Master
+                        </button>
+                    </div>
+
+                    <table id="masterTable">
+                        <thead>
+                            <tr>
+                                <th>Barcode</th>
+                                <th>Nama Barang</th>
+                                <th>Gudang</th>
+                                <th>Stok Terakhir</th>
+                                <th>Terakhir Update</th>
+                            </tr>
+                        </thead>
+                        <tbody id="masterBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 20px;">
+                                    Klik "Load Data Master" untuk menampilkan data
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://your-project.supabase.co'; // Ganti dengan URL Supabase Anda
+        const SUPABASE_ANON_KEY = 'your-anon-key'; // Ganti dengan anon key Anda
+
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Global variables
+        let opnameData = [];
+        let stokUpdateData = [];
+        let comparisonResults = [];
+        let currentUser = null;
+        
+        // Filter variables
+        let activeFilters = {
+            all: true,
+            match: true,
+            plus: true,
+            minus: true
+        };
+        let searchTerm = '';
+
+        // Check if user is already logged in
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                showApp();
+            }
+        }
+
+        // Login function
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('loginMessage');
+
+            if (!email || !password) {
+                messageDiv.innerHTML = '<span style="color: red;">Email dan password harus diisi!</span>';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                currentUser = data.user;
+                showApp();
+                
+            } catch (error) {
+                messageDiv.innerHTML = `<span style="color: red;">Login gagal: ${error.message}</span>`;
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            await supabase.auth.signOut();
+            currentUser = null;
+            showLogin();
+        }
+
+        // Show/hide sections
+        function showApp() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('appSection').classList.remove('hidden');
+            document.getElementById('userEmail').textContent = currentUser.email;
+        }
+
+        function showLogin() {
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('appSection').classList.add('hidden');
+        }
+
+        // Tab switching
+        function switchTab(tabNumber) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById('tab' + tabNumber).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Filter functions
+        function toggleFilter(filterType) {
+            if (filterType === 'all') {
+                // Toggle all filters
+                const isChecked = document.getElementById('filterAll').checked;
+                activeFilters.all = isChecked;
+                activeFilters.match = isChecked;
+                activeFilters.plus = isChecked;
+                activeFilters.minus = isChecked;
+                
+                // Update checkboxes
+                document.getElementById('filterMatch').checked = isChecked;
+                document.getElementById('filterPlus').checked = isChecked;
+                document.getElementById('filterMinus').checked = isChecked;
+            } else {
+                // Toggle specific filter
+                activeFilters[filterType] = document.getElementById(`filter${filterType.charAt(0).toUpperCase() + filterType.slice(1)}`).checked;
+                
+                // Update "All" checkbox
+                const allChecked = activeFilters.match && activeFilters.plus && activeFilters.minus;
+                activeFilters.all = allChecked;
+                document.getElementById('filterAll').checked = allChecked;
+            }
+            
+            updateActiveFiltersDisplay();
+            updateComparisonTable();
+        }
+
+        function applySearchFilter() {
+            searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            updateComparisonTable();
+        }
+
+        function clearAllFilters() {
+            // Reset all filters to true
+            activeFilters = {
+                all: true,
+                match: true,
+                plus: true,
+                minus: true
+            };
+            
+            // Update checkboxes
+            document.getElementById('filterAll').checked = true;
+            document.getElementById('filterMatch').checked = true;
+            document.getElementById('filterPlus').checked = true;
+            document.getElementById('filterMinus').checked = true;
+            
+            // Clear search
+            searchTerm = '';
+            document.getElementById('searchInput').value = '';
+            
+            updateActiveFiltersDisplay();
+            updateComparisonTable();
+        }
+
+        function updateActiveFiltersDisplay() {
+            const activeFiltersContainer = document.getElementById('activeFilters');
+            activeFiltersContainer.innerHTML = '';
+            
+            const filters = [];
+            
+            if (!activeFilters.all) {
+                if (activeFilters.match) filters.push('Sesuai');
+                if (activeFilters.plus) filters.push('Lebih');
+                if (activeFilters.minus) filters.push('Kurang');
+                
+                if (filters.length === 0) {
+                    filters.push('Tidak ada filter aktif');
+                }
+            }
+            
+            if (searchTerm) {
+                filters.push(`Pencarian: "${searchTerm}"`);
+            }
+            
+            filters.forEach(filter => {
+                const tag = document.createElement('div');
+                tag.className = 'filter-tag';
+                tag.innerHTML = `${filter} <span class="remove" onclick="clearAllFilters()">×</span>`;
+                activeFiltersContainer.appendChild(tag);
+            });
+        }
+
+        // Handle file uploads
+        async function handleOpnameUpload(file) {
+            if (!file) return;
+            
+            const text = await file.text();
+            opnameData = parseCSV(text);
+            
+            document.getElementById('opnameSummary').innerHTML = `
+                <p><strong>✅ Data Terupload:</strong> ${opnameData.length} records</p>
+            `;
+            checkReadyForComparison();
+        }
+
+        async function handleStokUpdateUpload(file) {
+            if (!file) return;
+            
+            const text = await file.text();
+            stokUpdateData = parseCSV(text);
+            
+            document.getElementById('stokUpdateSummary').innerHTML = `
+                <p><strong>✅ Data Terupload:</strong> ${stokUpdateData.length} records</p>
+            `;
+            checkReadyForComparison();
+        }
+
+        // Parse CSV
+        function parseCSV(csv) {
+            const lines = csv.split('\n').filter(line => line.trim());
+            const result = [];
+            
+            if (lines.length === 0) return result;
+            
+            const delimiter = lines[0].includes(';') ? ';' : ',';
+            const headers = lines[0].split(delimiter).map(h => h.trim().toLowerCase());
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const obj = {};
+                const currentline = lines[i].split(delimiter);
+                
+                for (let j = 0; j < headers.length; j++) {
+                    if (j < currentline.length) {
+                        obj[headers[j]] = currentline[j] ? currentline[j].trim() : '';
+                    }
+                }
+                
+                if (Object.values(obj).some(val => val)) {
+                    result.push(obj);
+                }
+            }
+            
+            return result;
+        }
+
+        // Check if ready for comparison
+        function checkReadyForComparison() {
+            const compareBtn = document.getElementById('compareBtn');
+            compareBtn.disabled = !(opnameData.length > 0 && stokUpdateData.length > 0);
+        }
+
+        // Compare data
+        function compareData() {
+            comparisonResults = [];
+            
+            opnameData.forEach((opnameItem, index) => {
+                const barcode = opnameItem.barcode;
+                const gudang = opnameItem.gudang || 'Gudang Utama';
+                
+                const stokUpdateItem = stokUpdateData.find(stok => 
+                    stok.barcode === barcode && stok.gudang === gudang
+                );
+                
+                const qtyOpname = parseInt(opnameItem.qty || 0);
+                const qtyUpdate = stokUpdateItem ? parseInt(stokUpdateItem.qty_update || 0) : 0;
+                const selisih = qtyOpname - qtyUpdate;
+                
+                let status = 'SESUAI';
+                let statusClass = 'status-match';
+                
+                if (selisih > 0) {
+                    status = `LEBIH +${selisih}`;
+                    statusClass = 'status-plus';
+                } else if (selisih < 0) {
+                    status = `KURANG ${selisih}`;
+                    statusClass = 'status-minus';
+                }
+                
+                comparisonResults.push({
+                    id: index + 1,
+                    barcode: barcode,
+                    nama_barang: opnameItem.nama_barang || 'Unknown',
+                    gudang: gudang,
+                    qty_opname: qtyOpname,
+                    qty_update: qtyUpdate,
+                    qty_baru: qtyOpname,
+                    selisih: selisih,
+                    status: status,
+                    status_class: statusClass,
+                    reason: '',
+                    created_by: currentUser.email,
+                    updated_at: new Date().toISOString()
+                });
+            });
+            
+            // Add items from stok update that are not in opname data
+            stokUpdateData.forEach((stokItem, index) => {
+                const barcode = stokItem.barcode;
+                const gudang = stokItem.gudang || 'Gudang Utama';
+                
+                const existsInOpname = opnameData.some(opname => 
+                    opname.barcode === barcode && opname.gudang === gudang
+                );
+                
+                if (!existsInOpname) {
+                    const qtyUpdate = parseInt(stokItem.qty_update || 0);
+                    
+                    comparisonResults.push({
+                        id: comparisonResults.length + 1,
+                        barcode: barcode,
+                        nama_barang: stokItem.nama_barang || 'Unknown',
+                        gudang: gudang,
+                        qty_opname: 0,
+                        qty_update: qtyUpdate,
+                        qty_baru: 0,
+                        selisih: -qtyUpdate,
+                        status: `KURANG ${-qtyUpdate}`,
+                        status_class: 'status-minus',
+                        reason: 'Barang tidak ada di stok opname',
+                        created_by: currentUser.email,
+                        updated_at: new Date().toISOString()
+                    });
+                }
+            });
+            
+            updateComparisonTable();
+            updateReportSummary();
+            document.getElementById('saveBtn').disabled = false;
+        }
+
+        // Update comparison table with filters
+        function updateComparisonTable() {
+            const tbody = document.getElementById('comparisonBody');
+            tbody.innerHTML = '';
+            
+            if (comparisonResults.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 20px;">Belum ada data.</td></tr>';
+                document.getElementById('displayCount').textContent = '0';
+                document.getElementById('totalCount').textContent = '0';
+                return;
+            }
+            
+            // Apply filters
+            let filteredResults = comparisonResults.filter(item => {
+                // Status filter
+                let statusMatch = false;
+                if (item.selisih === 0 && activeFilters.match) statusMatch = true;
+                if (item.selisih > 0 && activeFilters.plus) statusMatch = true;
+                if (item.selisih < 0 && activeFilters.minus) statusMatch = true;
+                
+                if (!statusMatch) return false;
+                
+                // Search filter
+                if (searchTerm) {
+                    const searchMatch = item.barcode.toLowerCase().includes(searchTerm) || 
+                                      item.nama_barang.toLowerCase().includes(searchTerm) ||
+                                      item.gudang.toLowerCase().includes(searchTerm);
+                    if (!searchMatch) return false;
+                }
+                
+                return true;
+            });
+            
+            // Update counts
+            document.getElementById('displayCount').textContent = filteredResults.length;
+            document.getElementById('totalCount').textContent = comparisonResults.length;
+            
+            if (filteredResults.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 20px;">Tidak ada data yang sesuai dengan filter.</td></tr>';
+                return;
+            }
+            
+            // Display filtered results
+            filteredResults.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.barcode}</td>
+                    <td>${item.nama_barang}</td>
+                    <td>${item.gudang}</td>
+                    <td>${item.qty_opname}</td>
+                    <td>${item.qty_update}</td>
+                    <td>${item.selisih}</td>
+                    <td class="${item.status_class}">${item.status}</td>
+                    <td>
+                        <input type="number" value="${item.qty_baru}" class="editable"
+                               onchange="updateQtyBaru(${comparisonResults.indexOf(item)}, this.value)">
+                    </td>
+                    <td>
+                        <textarea onchange="updateReason(${comparisonResults.indexOf(item)}, this.value)" 
+                                  style="width: 100%; height: 40px; padding: 5px; font-size: 12px;">${item.reason}</textarea>
+                    </td>
+                    <td>
+                        <button onclick="removeItem(${comparisonResults.indexOf(item)})" class="btn-danger">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Update quantity
+        function updateQtyBaru(index, newQty) {
+            const item = comparisonResults[index];
+            const qtyBaru = parseInt(newQty) || 0;
+            
+            item.qty_baru = qtyBaru;
+            item.selisih = qtyBaru - item.qty_update;
+            
+            if (item.selisih === 0) {
+                item.status = 'SESUAI';
+                item.status_class = 'status-match';
+            } else if (item.selisih > 0) {
+                item.status = `LEBIH +${item.selisih}`;
+                item.status_class = 'status-plus';
+            } else {
+                item.status = `KURANG ${item.selisih}`;
+                item.status_class = 'status-minus';
+            }
+            
+            item.updated_at = new Date().toISOString();
+            updateComparisonTable();
+            updateReportSummary();
+        }
+
+        // Update reason
+        function updateReason(index, reason) {
+            comparisonResults[index].reason = reason;
+            comparisonResults[index].updated_at = new Date().toISOString();
+        }
+
+        // Remove item
+        function removeItem(index) {
+            if (confirm('Hapus item ini?')) {
+                comparisonResults.splice(index, 1);
+                updateComparisonTable();
+                updateReportSummary();
+            }
+        }
+
+        // Add manual item
+        function addManualItem() {
+            const barcode = prompt('Barcode:');
+            if (!barcode) return;
+            
+            const namaBarang = prompt('Nama Barang:');
+            const gudang = prompt('Gudang:', 'Gudang Utama');
+            const qtyBaru = parseInt(prompt('Qty Opname:', '0')) || 0;
+            const qtyUpdate = parseInt(prompt('Qty Update:', '0')) || 0;
+            
+            const selisih = qtyBaru - qtyUpdate;
+            let status = 'SESUAI';
+            let statusClass = 'status-match';
+            
+            if (selisih > 0) {
+                status = `LEBIH +${selisih}`;
+                statusClass = 'status-plus';
+            } else if (selisih < 0) {
+                status = `KURANG ${selisih}`;
+                statusClass = 'status-minus';
+            }
+            
+            comparisonResults.push({
+                id: comparisonResults.length + 1,
+                barcode: barcode,
+                nama_barang: namaBarang,
+                gudang: gudang,
+                qty_opname: qtyBaru,
+                qty_update: qtyUpdate,
+                qty_baru: qtyBaru,
+                selisih: selisih,
+                status: status,
+                status_class: statusClass,
+                reason: 'Manual entry',
+                created_by: currentUser.email,
+                updated_at: new Date().toISOString()
+            });
+            
+            updateComparisonTable();
+            updateReportSummary();
+        }
+
+        // Save to Supabase
+        async function saveToSupabase() {
+            if (comparisonResults.length === 0) {
+                alert('Tidak ada data untuk disimpan!');
+                return;
+            }
+
+            try {
+                // Save to stok_opname table
+                const { data, error } = await supabase
+                    .from('stok_opname')
+                    .upsert(comparisonResults, { 
+                        onConflict: 'barcode,gudang',
+                        ignoreDuplicates: false 
+                    });
+
+                if (error) throw error;
+
+                alert(`✅ Data berhasil disimpan! ${data ? data.length : 0} records tersimpan.`);
+                
+            } catch (error) {
+                alert(`❌ Error menyimpan data: ${error.message}`);
+            }
+        }
+
+        // Load from Supabase
+        async function loadFromSupabase() {
+            try {
+                const { data, error } = await supabase
+                    .from('stok_opname')
+                    .select('*')
+                    .order('updated_at', { ascending: false });
+
+                if (error) throw error;
+
+                comparisonResults = data || [];
+                updateComparisonTable();
+                updateReportSummary();
+                document.getElementById('saveBtn').disabled = false;
+                
+                alert(`✅ Data berhasil dimuat: ${comparisonResults.length} records`);
+                
+            } catch (error) {
+                alert(`❌ Error memuat data: ${error.message}`);
+            }
+        }
+
+        // Load master data
+        async function loadMasterData() {
+            try {
+                const { data, error } = await supabase
+                    .from('master_barang')
+                    .select('*')
+                    .order('nama_barang');
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('masterBody');
+                tbody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Tidak ada data master</td></tr>';
+                    return;
+                }
+                
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.barcode}</td>
+                        <td>${item.nama_barang}</td>
+                        <td>${item.gudang}</td>
+                        <td>${item.stok_terakhir || 0}</td>
+                        <td>${new Date(item.updated_at).toLocaleDateString('id-ID')}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+            } catch (error) {
+                alert(`❌ Error memuat data master: ${error.message}`);
+            }
+        }
+
+        // Sync to master data
+        async function syncToMaster() {
+            if (comparisonResults.length === 0) {
+                alert('Tidak ada data untuk disinkronisasi!');
+                return;
+            }
+
+            try {
+                const masterData = comparisonResults.map(item => ({
+                    barcode: item.barcode,
+                    nama_barang: item.nama_barang,
+                    gudang: item.gudang,
+                    stok_terakhir: item.qty_baru,
+                    updated_at: new Date().toISOString()
+                }));
+
+                const { error } = await supabase
+                    .from('master_barang')
+                    .upsert(masterData, { onConflict: 'barcode,gudang' });
+
+                if (error) throw error;
+
+                alert('✅ Data master berhasil diupdate!');
+                
+            } catch (error) {
+                alert(`❌ Error sync data: ${error.message}`);
+            }
+        }
+
+        // Update report summary
+        function updateReportSummary() {
+            const summary = document.getElementById('reportSummary');
+            const total = comparisonResults.length;
+            const sesuai = comparisonResults.filter(item => item.selisih === 0).length;
+            const lebih = comparisonResults.filter(item => item.selisih > 0).length;
+            const kurang = comparisonResults.filter(item => item.selisih < 0).length;
+
+            summary.innerHTML = `
+                <div class="summary-card">
+                    <h4>Total Barang</h4>
+                    <p style="font-size: 24px; font-weight: bold; color: #3498db;">${total}</p>
+                    <p>Item dibandingkan</p>
+                </div>
+                <div class="summary-card">
+                    <h4>Sesuai</h4>
+                    <p style="font-size: 24px; font-weight: bold; color: #27ae60;">${sesuai}</p>
+                    <p>Item sesuai</p>
+                </div>
+                <div class="summary-card">
+                    <h4>Lebih</h4>
+                    <p style="font-size: 24px; font-weight: bold; color: #e67e22;">${lebih}</p>
+                    <p>Item lebih</p>
+                </div>
+                <div class="summary-card">
+                    <h4>Kurang</h4>
+                    <p style="font-size: 24px; font-weight: bold; color: #e74c3c;">${kurang}</p>
+                    <p>Item kurang</p>
+                </div>
+            `;
+        }
+
+        // Generate report
+        function generateReport() {
+            // Apply current filters to report
+            let filteredResults = comparisonResults.filter(item => {
+                let statusMatch = false;
+                if (item.selisih === 0 && activeFilters.match) statusMatch = true;
+                if (item.selisih > 0 && activeFilters.plus) statusMatch = true;
+                if (item.selisih < 0 && activeFilters.minus) statusMatch = true;
+                
+                if (!statusMatch) return false;
+                
+                if (searchTerm) {
+                    const searchMatch = item.barcode.toLowerCase().includes(searchTerm) || 
+                                      item.nama_barang.toLowerCase().includes(searchTerm);
+                    if (!searchMatch) return false;
+                }
+                
+                return true;
+            });
+
+            if (filteredResults.length === 0) {
+                alert('Tidak ada data yang sesuai dengan filter untuk dicetak!');
+                return;
+            }
+
+            const printWindow = window.open('', '_blank');
+            const printDate = new Date().toLocaleDateString('id-ID');
+            
+            let printContent = `
+                <html>
+                <head>
+                    <title>Laporan Stok Opname</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                        .match { background-color: #d4edda; }
+                        .plus { background-color: #ffeaa7; }
+                        .minus { background-color: #ffcccc; }
+                    </style>
+                </head>
+                <body>
+                    <h2>Laporan Stok Opname</h2>
+                    <p>Tanggal: ${printDate}</p>
+                    <p>User: ${currentUser.email}</p>
+                    <p>Filter: ${getActiveFiltersText()}</p>
+                    <p>Total Data: ${filteredResults.length} item</p>
+                    <table>
+                        <tr>
+                            <th>No</th>
+                            <th>Barcode</th>
+                            <th>Nama Barang</th>
+                            <th>Gudang</th>
+                            <th>Qty Opname</th>
+                            <th>Qty Update</th>
+                            <th>Selisih</th>
+                            <th>Status</th>
+                        </tr>
+            `;
+            
+            filteredResults.forEach((item, index) => {
+                const rowClass = item.selisih === 0 ? 'match' : item.selisih > 0 ? 'plus' : 'minus';
+                printContent += `
+                    <tr class="${rowClass}">
+                        <td>${index + 1}</td>
+                        <td>${item.barcode}</td>
+                        <td>${item.nama_barang}</td>
+                        <td>${item.gudang}</td>
+                        <td>${item.qty_opname}</td>
+                        <td>${item.qty_update}</td>
+                        <td>${item.selisih}</td>
+                        <td>${item.status}</td>
+                    </tr>
+                `;
+            });
+            
+            printContent += `</table></body></html>`;
+            
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function getActiveFiltersText() {
+            const filters = [];
+            if (activeFilters.match) filters.push('Sesuai');
+            if (activeFilters.plus) filters.push('Lebih');
+            if (activeFilters.minus) filters.push('Kurang');
+            
+            return filters.length === 3 ? 'Semua' : filters.join(', ');
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            if (comparisonResults.length === 0) {
+                alert('Tidak ada data untuk diexport!');
+                return;
+            }
+            
+            // Apply current filters to export
+            let filteredResults = comparisonResults.filter(item => {
+                let statusMatch = false;
+                if (item.selisih === 0 && activeFilters.match) statusMatch = true;
+                if (item.selisih > 0 && activeFilters.plus) statusMatch = true;
+                if (item.selisih < 0 && activeFilters.minus) statusMatch = true;
+                
+                return statusMatch;
+            });
+
+            if (filteredResults.length === 0) {
+                alert('Tidak ada data yang sesuai dengan filter untuk diexport!');
+                return;
+            }
+            
+            let csvContent = "No,Barcode,Nama Barang,Gudang,Qty Opname,Qty Update,Selisih,Status,Reason\n";
+            
+            filteredResults.forEach((item, index) => {
+                csvContent += `"${index + 1}","${item.barcode}","${item.nama_barang}","${item.gudang}",${item.qty_opname},${item.qty_update},${item.selisih},"${item.status}","${item.reason}"\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `stok_opname_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            updateActiveFiltersDisplay();
+        });
+    </script>
+</body>
+</html>
